@@ -12,10 +12,46 @@
   </head>
   <body>
     <div class="shell">
+      <!-- MOBILE MENU -->
+      <div class="mobile-menu" id="mobileMenu">
+        <div class="mobile-menu-header">
+          <h1>Menu</h1>
+          <button class="mobile-menu-close" onclick="toggleMobileMenu()">×</button>
+        </div>
+        <nav class="mobile-nav">
+          <div class="nav-item" onclick="showPageMobile('dashboard')">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Dashboard
+          </div>
+          <div class="nav-item" onclick="showPageMobile('transaksi')">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+            Transaksi
+          </div>
+          <div class="nav-item" onclick="showPageMobile('laporan')">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Laporan
+          </div>
+        </nav>
+        <div class="mobile-menu-footer">
+          <button class="export-btn" onclick="exportExcel(); toggleMobileMenu();">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Excel
+          </button>
+          <button class="export-btn" onclick="exportJson(); toggleMobileMenu();">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M8 21h8"/></svg>
+            Export JSON
+          </button>
+          <button class="export-btn" onclick="document.getElementById('jsonFileInput').click()">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 15v6"/></svg>
+            Import JSON
+          </button>
+        </div>
+      </div>
+
       <!-- SIDEBAR -->
       <aside class="sidebar">
         <div class="sidebar-logo">
-          <h1>Catat<br/>Pengeluaran</h1>
+          <h1>Pengeluaran<br/>Bulanan</h1>
           <span>Manajer Keuangan</span>
         </div>
         <nav class="nav">
@@ -37,6 +73,15 @@
             <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
             Export Excel
           </button>
+          <button class="export-btn" onclick="exportJson()" style="margin-top:10px;">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M12 3v12"/><path d="M8 7l4-4 4 4"/><path d="M8 21h8"/></svg>
+            Export JSON
+          </button>
+          <button class="export-btn" onclick="document.getElementById('jsonFileInput').click()" style="margin-top:10px;">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><path d="M7 10l5-5 5 5"/><path d="M12 15v6"/></svg>
+            Import JSON
+          </button>
+          <input type="file" id="jsonFileInput" accept=".json,application/json" style="display:none" onchange="importJson(event)" />
         </div>
       </aside>
 
@@ -44,6 +89,11 @@
       <div class="main">
         <!-- TOPBAR -->
         <div class="topbar">
+          <button class="hamburger" id="hamburgerBtn" onclick="toggleMobileMenu()">
+            <span></span>
+            <span></span>
+            <span></span>
+          </button>
           <div class="topbar-title" id="pageTitle">Dashboard</div>
           <div class="month-ctrl">
             <button class="month-btn" onclick="changeMonth(-1)">

@@ -78,6 +78,18 @@ function showPage(p) {
   render();
 }
 
+function showPageMobile(p) {
+  showPage(p);
+  toggleMobileMenu();
+}
+
+function toggleMobileMenu() {
+  const menu = document.getElementById('mobileMenu');
+  const hamburger = document.getElementById('hamburgerBtn');
+  menu.classList.toggle('open');
+  hamburger.classList.toggle('active');
+}
+
 function changeMonth(d) {
   curMonth += d;
   if (curMonth > 11) {
@@ -622,6 +634,71 @@ function exportExcel() {
   const fname = `Pengeluaran_${MONTHS[curMonth]}_${curYear}.xlsx`;
   XLSX.writeFile(wb, fname);
   toast('✓ File Excel berhasil diunduh');
+}
+
+function exportJson() {
+  const payload = {
+    data,
+    budgets
+  };
+  const blob = new Blob([JSON.stringify(payload, null, 2)], { type: 'application/json' });
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url;
+  a.download = `Pengeluaran_${MONTHS[curMonth]}_${curYear}.json`;
+  document.body.appendChild(a);
+  a.click();
+  a.remove();
+  URL.revokeObjectURL(url);
+  toast('✓ File JSON berhasil diunduh');
+}
+
+function importJson(event) {
+  const file = event.target.files[0];
+  if (!file) return;
+
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const imported = JSON.parse(reader.result);
+      let importedData = null;
+      let importedBudgets = null;
+
+      if (imported && typeof imported === 'object') {
+        if (imported.data && typeof imported.data === 'object') {
+          importedData = imported.data;
+          importedBudgets = imported.budgets || {};
+        } else if (imported.exp_v2 || imported.exp_budgets) {
+          importedData = imported.exp_v2 || {};
+          importedBudgets = imported.exp_budgets || {};
+        }
+      }
+
+      if (!importedData) {
+        throw new Error('Format JSON tidak valid');
+      }
+
+      if (!confirm('Impor data akan menggantikan data saat ini. Lanjutkan?')) {
+        event.target.value = '';
+        return;
+      }
+
+      data = importedData;
+      budgets = importedBudgets;
+      save();
+      saveBudgets();
+      document.getElementById('budgetInput').value = budgets[key()] || '';
+      render();
+      toast('✓ Data JSON berhasil diimpor');
+    } catch (error) {
+      console.error(error);
+      toast('⚠ Gagal mengimpor: format tidak valid');
+    } finally {
+      event.target.value = '';
+    }
+  };
+
+  reader.readAsText(file);
 }
 
 // ─── INIT ─────────────────────────────────────────────
