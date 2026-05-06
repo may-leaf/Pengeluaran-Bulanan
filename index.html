@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="id">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Pengeluaran Bulanan</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display:ital@0;1&family=DM+Sans:wght@300;400;500;600&display=swap" rel="stylesheet" />
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+    <link rel="stylesheet" href="Style.css">
+  </head>
+  <body>
+    <div class="shell">
+      <!-- SIDEBAR -->
+      <aside class="sidebar">
+        <div class="sidebar-logo">
+          <h1>Catat<br/>Pengeluaran</h1>
+          <span>Manajer Keuangan</span>
+        </div>
+        <nav class="nav">
+          <div class="nav-item active" onclick="showPage('dashboard')">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            Dashboard
+          </div>
+          <div class="nav-item" onclick="showPage('transaksi')">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2h-2"/><rect x="9" y="3" width="6" height="4" rx="1"/><line x1="9" y1="12" x2="15" y2="12"/><line x1="9" y1="16" x2="13" y2="16"/></svg>
+            Transaksi
+          </div>
+          <div class="nav-item" onclick="showPage('laporan')">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><polyline points="22 12 18 12 15 21 9 3 6 12 2 12"/></svg>
+            Laporan
+          </div>
+        </nav>
+        <div class="sidebar-foot">
+          <button class="export-btn" onclick="exportExcel()">
+            <svg fill="none" stroke="currentColor" stroke-width="1.8" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+            Export Excel
+          </button>
+        </div>
+      </aside>
+
+      <!-- MAIN -->
+      <div class="main">
+        <!-- TOPBAR -->
+        <div class="topbar">
+          <div class="topbar-title" id="pageTitle">Dashboard</div>
+          <div class="month-ctrl">
+            <button class="month-btn" onclick="changeMonth(-1)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="15 18 9 12 15 6"/></svg>
+            </button>
+            <span class="month-label" id="monthLabel"></span>
+            <button class="month-btn" onclick="changeMonth(1)">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            </button>
+          </div>
+        </div>
+
+        <!-- CONTENT -->
+        <div class="content">
+          <!-- ===== DASHBOARD ===== -->
+          <div id="page-dashboard" class="tab-content active">
+            <div class="metrics">
+              <div class="metric-card accent">
+                <div class="metric-label">Total Pengeluaran</div>
+                <div class="metric-value" id="m-total">Rp 0</div>
+                <div class="metric-sub" id="m-count">0 transaksi</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Sisa Anggaran</div>
+                <div class="metric-value" id="m-sisa">Rp 0</div>
+                <div class="metric-sub" id="m-pct-label">dari anggaran</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Rata-rata / Hari</div>
+                <div class="metric-value" id="m-daily">Rp 0</div>
+                <div class="metric-sub">hari aktif bulan ini</div>
+              </div>
+              <div class="metric-card">
+                <div class="metric-label">Pengeluaran Terbesar</div>
+                <div class="metric-value" id="m-max">Rp 0</div>
+                <div class="metric-sub" id="m-max-cat">—</div>
+              </div>
+            </div>
+
+            <!-- Budget -->
+            <div class="budget-section">
+              <div class="budget-row">
+                <label>Anggaran Bulan Ini (Rp)</label>
+                <input type="number" id="budgetInput" placeholder="0" oninput="saveBudget()" />
+                <div class="progress-track">
+                  <div class="progress-fill" id="progressFill" style="width:0%"></div>
+                </div>
+                <span class="progress-pct" id="progressPct">0%</span>
+              </div>
+            </div>
+
+            <div class="grid2">
+              <div class="panel">
+                <div class="panel-title">Pengeluaran per Kategori</div>
+                <div class="chart-box"><canvas id="catChart" role="img" aria-label="Grafik donat kategori pengeluaran"></canvas></div>
+                <div class="legend" id="catLegend"></div>
+              </div>
+              <div class="panel">
+                <div class="panel-title">Tren Harian</div>
+                <div class="chart-box"><canvas id="trendChart" role="img" aria-label="Grafik batang tren harian"></canvas></div>
+              </div>
+            </div>
+
+            <!-- Recent -->
+            <div class="panel">
+              <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:16px">
+                <div class="panel-title" style="margin-bottom:0">Transaksi Terbaru</div>
+                <button class="btn btn-ghost btn-sm" onclick="showPage('transaksi')">Lihat semua →</button>
+              </div>
+              <div class="table-wrap"><table id="recentTable">
+                <thead><tr>
+                  <th>Tanggal</th><th>Keterangan</th><th>Kategori</th><th style="text-align:right">Jumlah</th>
+                </tr></thead>
+                <tbody id="recentBody"></tbody>
+              </table></div>
+            </div>
+          </div>
+
+          <!-- ===== TRANSAKSI ==== -->
+          <div id="page-transaksi" class="tab-content">
+            <!-- Add form -->
+            <div class="panel" style="margin-bottom:20px">
+              <div class="panel-title">Tambah Pengeluaran Baru</div>
+              <div class="form-grid">
+                <div class="field"><label>Keterangan *</label><input type="text" id="fName" placeholder="Contoh: Makan siang di warteg" /></div>
+                <div class="field"><label>Jumlah (Rp) *</label><input type="number" id="fAmount" placeholder="0" /></div>
+                <div class="field"><label>Kategori</label>
+                  <select id="fCat">
+                    <option>Makanan</option><option>Transportasi</option><option>Tagihan</option>
+                    <option>Belanja</option><option>Hiburan</option><option>Kesehatan</option><option>Lainnya</option>
+                  </select>
+                </div>
+                <div class="field"><label>Tanggal</label><input type="date" id="fDate" /></div>
+                <div class="field"><label>&nbsp;</label><button class="btn btn-primary" onclick="addExpense()">
+                  <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                  Tambah
+                </button></div>
+              </div>
+              <div class="field" style="margin-top:10px"><label>Catatan (opsional)</label>
+                <input type="text" id="fNote" placeholder="Catatan tambahan..." style="max-width:400px" />
+              </div>
+            </div>
+
+            <!-- Filter bar -->
+            <div class="filter-bar">
+              <input type="text" id="searchInput" placeholder="Cari transaksi..." oninput="renderTransactions()" />
+              <select id="filterCat" onchange="renderTransactions()">
+                <option value="">Semua Kategori</option>
+                <option>Makanan</option><option>Transportasi</option><option>Tagihan</option>
+                <option>Belanja</option><option>Hiburan</option><option>Kesehatan</option><option>Lainnya</option>
+              </select>
+              <select id="sortBy" onchange="renderTransactions()">
+                <option value="date-desc">Terbaru</option>
+                <option value="date-asc">Terlama</option>
+                <option value="amount-desc">Terbesar</option>
+                <option value="amount-asc">Terkecil</option>
+              </select>
+              <span class="result-count" id="resultCount"></span>
+              <button class="btn btn-ghost btn-sm" onclick="confirmDeleteAll()" style="color:var(--danger)">Hapus semua bulan ini</button>
+            </div>
+
+            <div class="panel" style="padding:0">
+              <div class="table-wrap"><table>
+                <thead><tr>
+                  <th>Tanggal</th><th>Keterangan</th><th>Catatan</th><th>Kategori</th>
+                  <th style="text-align:right">Jumlah</th><th>Aksi</th>
+                </tr></thead>
+                <tbody id="transBody"></tbody>
+              </table></div>
+            </div>
+          </div>
+
+          <!-- ===== LAPORAN ===== -->
+          <div id="page-laporan" class="tab-content">
+            <div class="grid3">
+              <div class="panel">
+                <div class="panel-title">Distribusi Kategori</div>
+                <div class="chart-box"><canvas id="reportPie" role="img" aria-label="Grafik pie laporan kategori"></canvas></div>
+              </div>
+              <div class="panel" style="grid-column:span 2">
+                <div class="panel-title">Perbandingan Antar Bulan (6 bulan terakhir)</div>
+                <div class="chart-box" style="height:200px"><canvas id="reportLine" role="img" aria-label="Grafik line perbandingan bulanan"></canvas></div>
+              </div>
+            </div>
+            <div class="grid2">
+              <div class="panel">
+                <div class="panel-title">Rincian per Kategori Bulan Ini</div>
+                <div id="catBreakdown"></div>
+              </div>
+              <div class="panel">
+                <div class="panel-title">Top 5 Pengeluaran Terbesar</div>
+                <div id="topExpenses"></div>
+              </div>
+            </div>
+          </div>
+        </div><!-- /content -->
+      </div><!-- /main -->
+    </div>
+
+    <!-- EDIT MODAL -->
+    <div class="modal-overlay" id="editModal">
+      <div class="modal">
+        <div class="modal-header">
+          <div class="modal-title">Edit Pengeluaran</div>
+          <button class="modal-close" onclick="closeModal()">×</button>
+        </div>
+        <div class="modal-form">
+          <input type="hidden" id="editId" />
+          <div class="field"><label>Keterangan *</label><input type="text" id="editName" /></div>
+          <div class="field"><label>Jumlah (Rp) *</label><input type="number" id="editAmount" /></div>
+          <div class="field"><label>Kategori</label>
+            <select id="editCat">
+              <option>Makanan</option><option>Transportasi</option><option>Tagihan</option>
+              <option>Belanja</option><option>Hiburan</option><option>Kesehatan</option><option>Lainnya</option>
+            </select>
+          </div>
+          <div class="field"><label>Tanggal</label><input type="date" id="editDate" /></div>
+          <div class="field"><label>Catatan</label><input type="text" id="editNote" /></div>
+        </div>
+        <div class="modal-actions">
+          <button class="btn btn-ghost" onclick="closeModal()">Batal</button>
+          <button class="btn btn-primary" onclick="saveEdit()">Simpan Perubahan</button>
+        </div>
+      </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script src="Script.js"></script>
+  </body>
+</html>
