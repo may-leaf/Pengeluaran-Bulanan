@@ -43,9 +43,13 @@ body {
   background: var(--accent);
   color: #fff;
   flex-shrink: 0;
+  position: fixed;
   display: flex;
   flex-direction: column;
   padding: 28px 0;
+  overflow: hidden;
+  height: 100vh;
+  z-index: 100;
 }
 
 .sidebar-logo {
@@ -134,7 +138,8 @@ body {
 
 .main {
   flex: 1;
-  overflow: auto;
+  margin-left: 240px;
+  min-height: 100vh;
 }
 
 /* HAMBURGER MENU */
@@ -279,6 +284,7 @@ body {
   position: sticky;
   top: 0;
   z-index: 10;
+  width: 100%;
 }
 
 .topbar-title {
@@ -857,6 +863,10 @@ tbody td {
     width: 200px;
   }
 
+  .main {
+    margin-left: 200px;
+  }
+
   .metrics {
     grid-template-columns: repeat(2, 1fr);
   }
@@ -874,6 +884,11 @@ tbody td {
 @media (max-width: 640px) {
   .sidebar {
     display: none;
+  }
+
+  .main {
+    margin-left: 0;
+    width: 100%;
   }
 
   .hamburger {
